@@ -37,7 +37,7 @@
                 android:value="LONG_TEXT" />
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="300" />
+                android:value="3600" />
         </service>
 
         <service

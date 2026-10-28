@@ -20,8 +20,16 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/** What the face shows: two lines in slot 0, one line in slot 1. */
-data class GameView(val line1: String, val line2: String, val detail: String)
+/**
+ * What the face shows: two lines in slot 0, one line in slot 1.
+ * nextRefreshMs = when to check again (null = no extra check; the hourly system update still runs).
+ */
+data class GameView(
+    val line1: String,
+    val line2: String,
+    val detail: String,
+    val nextRefreshMs: Long? = null
+)
 
 object BearsGames {
     private const val SCHEDULE =
@@ -33,12 +41,17 @@ object BearsGames {
     private const val FINAL_HOURS = 20L
     private const val BALL = "\uD83C\uDFC8"
 
+    // Refresh timing
+    private const val LIVE_REFRESH_MS = 60_000L            // every minute during a live game
+    private const val MIN_DELAY_MS = 60_000L
+    private const val MAX_DELAY_MS = 24 * 60 * 60 * 1000L  // never schedule further than a day out
+
     @Volatile private var cache: Pair<Long, GameView>? = null
 
-    // Both slots call this; the cache means one network fetch serves both
+    // Both slots call this; the short cache means one network fetch serves both
     suspend fun current(): GameView {
         val c = cache
-        if (c != null && System.currentTimeMillis() - c.first < 60_000) return c.second
+        if (c != null && System.currentTimeMillis() - c.first < 15_000) return c.second
         val v = withContext(Dispatchers.IO) { load() }
         cache = System.currentTimeMillis() to v
         return v
@@ -60,11 +73,19 @@ object BearsGames {
             }
         }
 
-        live?.let { return liveView(it) }
+        // Live: check every minute
+        live?.let { return liveView(it).copy(nextRefreshMs = LIVE_REFRESH_MS) }
+
+        // Just finished: show final, no extra checks needed
         lastPost?.let {
             if (Duration.between(kickoff(it), now) < Duration.ofHours(FINAL_HOURS)) return finalView(it)
         }
-        next?.let { return preView(it) }
+
+        // Upcoming: hourly system update, plus one check right at kickoff to start live mode
+        next?.let {
+            val untilKickoff = kickoff(it).toEpochMilli() - now.toEpochMilli()
+            return preView(it).copy(nextRefreshMs = untilKickoff.coerceIn(MIN_DELAY_MS, MAX_DELAY_MS))
+        }
         return GameView("CHI", "Season over", "")
     }
 
@@ -190,7 +211,7 @@ private fun longText(text: String, title: String? = null): ComplicationData {
     return b.build()
 }
 
-/** Slot 0: teams/score + status line */
+/** Slot 0: teams/score + status line. Also schedules the next refresh. */
 class BearsScoreService : SuspendingComplicationDataSourceService() {
     override fun getPreviewData(type: ComplicationType): ComplicationData? =
         longText("CHI 14  GB 10", "Q3 8:42 · 2nd & 7")
@@ -198,9 +219,11 @@ class BearsScoreService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         if (request.complicationType != ComplicationType.LONG_TEXT) return null
         val g = try { BearsGames.current() } catch (e: Exception) {
-             Log.w("BearsScore", "load failed", e)
-             GameView("CHI --", e.javaClass.simpleName, "")
-         }
+            Log.w("BearsScore", "load failed", e)
+            // Show the error type on the face and retry in 2 minutes
+            GameView("CHI --", e.javaClass.simpleName, "", 120_000L)
+        }
+        Refresher.schedule(applicationContext, g.nextRefreshMs)
         return longText(g.line1, g.line2)
     }
 }
