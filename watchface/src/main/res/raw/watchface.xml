@@ -2,6 +2,12 @@
 <!-- 450x450 round: navy top (logo + time), orange bottom (2 complication slots) -->
 <WatchFace width="450" height="450">
   <Metadata key="CLOCK_TYPE" value="DIGITAL"/>
+  <UserConfigurations>
+    <ListConfiguration id="logo" displayName="@string/logo_config" defaultValue="0">
+      <ListOption id="0" displayName="@string/logo_c" icon="logo_c"/>
+      <ListOption id="1" displayName="@string/logo_bear" icon="logo_bear"/>
+    </ListConfiguration>
+  </UserConfigurations>
   <Scene backgroundColor="#0B162A">
 
     <PartDraw x="0" y="265" width="450" height="185">
@@ -11,8 +17,17 @@
     </PartDraw>
 
     <!-- Add your own PNG at res/drawable-nodpi/bears_logo.png -->
-    <PartImage x="155" y="22" width="140" height="140">
-      <Image resource="bears_logo"/>
+    <!-- Logo: res/drawable-nodpi/logo_c.png and logo_bear.png -->
+    <PartImage x="150" y="22" width="140" height="140">
+    <!-- C logo -->
+      <Transform target="alpha" value="[CONFIGURATION.logo] == 0 ? 255 : 0"/>
+      <Image resource="logo_c"/>
+    </PartImage>
+
+    <PartImage x="150" y="22" width="140" height="140">
+    <!-- Bear logo -->
+      <Transform target="alpha" value="[CONFIGURATION.logo] == 0 ? 0 : 255"/>
+      <Image resource="logo_bear"/>
     </PartImage>
 
     <DigitalClock x="45" y="160" width="360" height="105">

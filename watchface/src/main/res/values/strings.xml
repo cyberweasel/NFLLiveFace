@@ -3,4 +3,7 @@
     <string name="app_name">NFL Bears Face</string>
     <string name="score_slot">Score</string>
     <string name="detail_slot">Game details</string>
+	<string name="logo_config">Logo</string>
+    <string name="logo_c">Bears C</string>
+    <string name="logo_bear">Bear head</string>
 </resources>
