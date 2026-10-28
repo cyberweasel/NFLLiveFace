@@ -53,7 +53,7 @@
         </PartText>
         <PartText x="0" y="50" width="330" height="42">
           <Text align="CENTER">
-            <Font family="SANS_SERIF" size="28" color="#FFFFFF">
+            <Font family="SANS_SERIF" size="30" weight="BOLD" color="#FFFFFF">
               <Template>%s<Parameter expression="[COMPLICATION.TITLE]"/></Template>
             </Font>
           </Text>
@@ -70,7 +70,7 @@
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="270" height="40">
           <Text align="CENTER">
-            <Font family="SANS_SERIF" size="22" color="#FFFFFF">
+            <Font family="SANS_SERIF" size="26" color="#FFFFFF">
               <Template>%s<Parameter expression="[COMPLICATION.TEXT]"/></Template>
             </Font>
           </Text>
