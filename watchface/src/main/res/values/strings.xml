@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NFL Bears Face</string>
+    <string name="score_slot">Score</string>
+    <string name="detail_slot">Game details</string>
+</resources>

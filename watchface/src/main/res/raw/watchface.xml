@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 450x450 round: navy top (logo + time), orange bottom (2 complication slots) -->
+<WatchFace width="450" height="450">
+  <Metadata key="CLOCK_TYPE" value="DIGITAL"/>
+  <Scene backgroundColor="#0B162A">
+
+    <PartDraw x="0" y="265" width="450" height="185">
+      <Rectangle x="0" y="0" width="450" height="185">
+        <Fill color="#C83803"/>
+      </Rectangle>
+    </PartDraw>
+
+    <!-- Add your own PNG at res/drawable-nodpi/bears_logo.png -->
+    <PartImage x="155" y="22" width="140" height="140">
+      <Image resource="bears_logo"/>
+    </PartImage>
+
+    <DigitalClock x="45" y="160" width="360" height="105">
+      <TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER">
+        <Font family="SANS_SERIF" size="80" weight="BOLD" color="#FFFFFF"/>
+      </TimeText>
+    </DigitalClock>
+
+    <!-- Slot 0: teams/score line + status line -->
+    <ComplicationSlot slotId="0" name="SCORE" displayName="@string/score_slot"
+        x="60" y="272" width="330" height="95" supportedTypes="LONG_TEXT">
+      <DefaultProviderPolicy defaultSystemProvider="EMPTY"
+          defaultSystemProviderType="LONG_TEXT"/>
+      <Complication type="LONG_TEXT">
+        <PartText x="0" y="0" width="330" height="50">
+          <Text align="CENTER">
+            <Font family="SANS_SERIF" size="36" weight="BOLD" color="#FFFFFF">
+              <Template>%s<Parameter expression="[COMPLICATION.TEXT]"/></Template>
+            </Font>
+          </Text>
+        </PartText>
+        <PartText x="0" y="50" width="330" height="42">
+          <Text align="CENTER">
+            <Font family="SANS_SERIF" size="28" color="#FFFFFF">
+              <Template>%s<Parameter expression="[COMPLICATION.TITLE]"/></Template>
+            </Font>
+          </Text>
+        </PartText>
+      </Complication>
+    </ComplicationSlot>
+
+    <!-- Slot 1: stadium and broadcast (pregame only) -->
+    <ComplicationSlot slotId="1" name="DETAIL" displayName="@string/detail_slot"
+        x="90" y="368" width="270" height="40" supportedTypes="LONG_TEXT">
+      <DefaultProviderPolicy defaultSystemProvider="EMPTY"
+          defaultSystemProviderType="LONG_TEXT"/>
+      <Complication type="LONG_TEXT">
+        <PartText x="0" y="0" width="270" height="40">
+          <Text align="CENTER">
+            <Font family="SANS_SERIF" size="22" color="#FFFFFF">
+              <Template>%s<Parameter expression="[COMPLICATION.TEXT]"/></Template>
+            </Font>
+          </Text>
+        </PartText>
+      </Complication>
+    </ComplicationSlot>
+
+  </Scene>
+</WatchFace>
