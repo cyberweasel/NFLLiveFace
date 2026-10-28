@@ -198,8 +198,9 @@ class BearsScoreService : SuspendingComplicationDataSourceService() {
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         if (request.complicationType != ComplicationType.LONG_TEXT) return null
         val g = try { BearsGames.current() } catch (e: Exception) {
-            Log.w("BearsScore", "load failed", e); GameView("CHI --", "No data", "")
-        }
+             Log.w("BearsScore", "load failed", e)
+             GameView("CHI --", e.javaClass.simpleName, "")
+         }
         return longText(g.line1, g.line2)
     }
 }

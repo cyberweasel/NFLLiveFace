@@ -16,7 +16,8 @@
     </PartImage>
 
     <DigitalClock x="45" y="160" width="360" height="105">
-      <TimeText format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER">
+      <TimeText x="0" y="0" width="360" height="105"
+          format="hh:mm" hourFormat="SYNC_TO_DEVICE" align="CENTER">
         <Font family="SANS_SERIF" size="80" weight="BOLD" color="#FFFFFF"/>
       </TimeText>
     </DigitalClock>
@@ -24,7 +25,8 @@
     <!-- Slot 0: teams/score line + status line -->
     <ComplicationSlot slotId="0" name="SCORE" displayName="@string/score_slot"
         x="60" y="272" width="330" height="95" supportedTypes="LONG_TEXT">
-      <DefaultProviderPolicy defaultSystemProvider="EMPTY"
+      <BoundingBox x="0" y="0" width="330" height="95"/>
+	  <DefaultProviderPolicy defaultSystemProvider="EMPTY"
           defaultSystemProviderType="LONG_TEXT"/>
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="330" height="50">
@@ -47,7 +49,8 @@
     <!-- Slot 1: stadium and broadcast (pregame only) -->
     <ComplicationSlot slotId="1" name="DETAIL" displayName="@string/detail_slot"
         x="90" y="368" width="270" height="40" supportedTypes="LONG_TEXT">
-      <DefaultProviderPolicy defaultSystemProvider="EMPTY"
+      <BoundingBox x="0" y="0" width="270" height="40"/>
+	  <DefaultProviderPolicy defaultSystemProvider="EMPTY"
           defaultSystemProviderType="LONG_TEXT"/>
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="270" height="40">
