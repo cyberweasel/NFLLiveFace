@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 450x450 round: navy top (logo + time), orange bottom (2 complication slots) -->
+<!--suppress XmlUnresolvedReference -->
 <WatchFace width="450" height="450">
   <Metadata key="CLOCK_TYPE" value="DIGITAL"/>
   <UserConfigurations>
@@ -41,8 +42,11 @@
     <ComplicationSlot slotId="0" name="SCORE" displayName="@string/score_slot"
         x="60" y="272" width="330" height="95" supportedTypes="LONG_TEXT">
       <BoundingBox x="0" y="0" width="330" height="95"/>
-	  <DefaultProviderPolicy defaultSystemProvider="EMPTY"
-          defaultSystemProviderType="LONG_TEXT"/>
+      <DefaultProviderPolicy
+          defaultSystemProvider="EMPTY"
+          defaultSystemProviderType="LONG_TEXT"
+          primaryProvider="com.example.nflwatchface/com.example.nflwatchface.BearsScoreService"
+          primaryProviderType="LONG_TEXT"/>
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="330" height="50">
           <Text align="CENTER">
@@ -65,8 +69,11 @@
     <ComplicationSlot slotId="1" name="DETAIL" displayName="@string/detail_slot"
         x="90" y="368" width="270" height="40" supportedTypes="LONG_TEXT">
       <BoundingBox x="0" y="0" width="270" height="40"/>
-	  <DefaultProviderPolicy defaultSystemProvider="EMPTY"
-          defaultSystemProviderType="LONG_TEXT"/>
+	  <DefaultProviderPolicy
+         defaultSystemProvider="EMPTY"
+         defaultSystemProviderType="LONG_TEXT"
+         primaryProvider="com.example.nflwatchface/com.example.nflwatchface.BearsDetailService"
+         primaryProviderType="LONG_TEXT"/>
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="270" height="40">
           <Text align="CENTER">

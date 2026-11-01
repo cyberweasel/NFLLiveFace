@@ -19,6 +19,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
 
 /**
  * What the face shows: two lines in slot 0, one line in slot 1.
@@ -46,15 +47,42 @@ object BearsGames {
     private const val MIN_DELAY_MS = 60_000L
     private const val MAX_DELAY_MS = 24 * 60 * 60 * 1000L  // never schedule further than a day out
 
-    @Volatile private var cache: Pair<Long, GameView>? = null
+    @Volatile
+    private var cache: Pair<Long, GameView>? = null
+
+    @Volatile
+    private var lastGood: Pair<Long, GameView>? = null
 
     // Both slots call this; the short cache means one network fetch serves both
     suspend fun current(): GameView {
         val c = cache
         if (c != null && System.currentTimeMillis() - c.first < 15_000) return c.second
         val v = withContext(Dispatchers.IO) { load() }
-        cache = System.currentTimeMillis() to v
+        val now = System.currentTimeMillis()
+        cache = now to v
+        lastGood = now to v
         return v
+    }
+
+    fun errorView(e: Exception): GameView {
+        val msg = when (e) {
+            is java.net.UnknownHostException,
+            is java.net.ConnectException,
+            is java.net.SocketTimeoutException,
+            is javax.net.ssl.SSLException -> "Offline"
+
+            is java.io.IOException -> "Feed unavailable"
+            is org.json.JSONException -> "Bad data"
+            else -> "Can't load"
+        }
+        val last = lastGood
+        // If we have a recent good result, keep showing it and mark it stale
+        if (last != null && System.currentTimeMillis() - last.first < 6 * 60 * 60 * 1000) {
+            val t = Instant.ofEpochMilli(last.first).atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("h:mm", Locale.getDefault()))
+            return last.second.copy(line2 = "$msg · $t", nextRefreshMs = 120_000L)
+        }
+        return GameView("CHI --", msg, "", 120_000L)
     }
 
     private fun load(): GameView {
@@ -78,13 +106,22 @@ object BearsGames {
 
         // Just finished: show final, no extra checks needed
         lastPost?.let {
-            if (Duration.between(kickoff(it), now) < Duration.ofHours(FINAL_HOURS)) return finalView(it)
+            if (Duration.between(
+                    kickoff(it),
+                    now
+                ) < Duration.ofHours(FINAL_HOURS)
+            ) return finalView(it)
         }
 
         // Upcoming: hourly system update, plus one check right at kickoff to start live mode
         next?.let {
             val untilKickoff = kickoff(it).toEpochMilli() - now.toEpochMilli()
-            return preView(it).copy(nextRefreshMs = untilKickoff.coerceIn(MIN_DELAY_MS, MAX_DELAY_MS))
+            return preView(it).copy(
+                nextRefreshMs = untilKickoff.coerceIn(
+                    MIN_DELAY_MS,
+                    MAX_DELAY_MS
+                )
+            )
         }
         return GameView("CHI", "Season over", "")
     }
@@ -184,7 +221,8 @@ object BearsGames {
         val b = comp.optJSONArray("broadcasts") ?: return ""
         for (i in 0 until b.length()) {
             val o = b.getJSONObject(i)
-            o.optJSONObject("media")?.optString("shortName")?.takeIf { it.isNotBlank() }?.let { return it }
+            o.optJSONObject("media")?.optString("shortName")?.takeIf { it.isNotBlank() }
+                ?.let { return it }
             o.optJSONArray("names")?.optString(0)?.takeIf { it.isNotBlank() }?.let { return it }
         }
         return ""
@@ -213,15 +251,18 @@ private fun longText(text: String, title: String? = null): ComplicationData {
 
 /** Slot 0: teams/score + status line. Also schedules the next refresh. */
 class BearsScoreService : SuspendingComplicationDataSourceService() {
-    override fun getPreviewData(type: ComplicationType): ComplicationData? =
-        longText("CHI 14  GB 10", "Q3 8:42 · 2nd & 7")
+    override fun getPreviewData(type: ComplicationType): ComplicationData =
+        longText("CHI 21  MIN 17", "Q4 2:15 · 1st & 10")
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         if (request.complicationType != ComplicationType.LONG_TEXT) return null
-        val g = try { BearsGames.current() } catch (e: Exception) {
+        val g = try {
+            BearsGames.current()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             Log.w("BearsScore", "load failed", e)
-            // Show the error type on the face and retry in 2 minutes
-            GameView("CHI --", e.javaClass.simpleName, "", 120_000L)
+            BearsGames.errorView(e)
         }
         Refresher.schedule(applicationContext, g.nextRefreshMs)
         return longText(g.line1, g.line2)
@@ -230,12 +271,19 @@ class BearsScoreService : SuspendingComplicationDataSourceService() {
 
 /** Slot 1: stadium and broadcast; empty during live games and finals */
 class BearsDetailService : SuspendingComplicationDataSourceService() {
-    override fun getPreviewData(type: ComplicationType): ComplicationData? =
-        longText("Lambeau Field · FOX")
+    override fun getPreviewData(type: ComplicationType): ComplicationData =
+        longText("Soldier Field · FOX")
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? {
         if (request.complicationType != ComplicationType.LONG_TEXT) return null
-        val g = try { BearsGames.current() } catch (e: Exception) { return EmptyComplicationData() }
+        val g = try {
+            BearsGames.current()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w("BearsScore", "detail load failed", e)
+            return EmptyComplicationData()
+        }
         return if (g.detail.isBlank()) EmptyComplicationData() else longText(g.detail)
     }
 }
