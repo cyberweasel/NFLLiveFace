@@ -63,18 +63,19 @@ object BearsGames {
         lastGood = now to v
         return v
     }
+    
+	fun lastDetail(): String = lastGood?.second?.detail.orEmpty()
 
     fun errorView(e: Exception): GameView {
-        val msg = when (e) {
-            is java.net.UnknownHostException,
-            is java.net.ConnectException,
-            is java.net.SocketTimeoutException,
-            is javax.net.ssl.SSLException -> "Offline"
-
-            is java.io.IOException -> "Feed unavailable"
-            is org.json.JSONException -> "Bad data"
-            else -> "Can't load"
-        }
+       val msg = when (e) {
+           is java.net.SocketTimeoutException -> "Slow connection"
+           is java.net.UnknownHostException,
+           is java.net.ConnectException -> "Offline"
+           is javax.net.ssl.SSLException -> "Secure error"
+           is java.io.IOException -> "Feed unavailable"
+           is org.json.JSONException -> "Bad data"
+        else -> "Can't load"
+    }
         val last = lastGood
         // If we have a recent good result, keep showing it and mark it stale
         if (last != null && System.currentTimeMillis() - last.first < 6 * 60 * 60 * 1000) {
@@ -230,8 +231,8 @@ object BearsGames {
 
     private fun getJson(url: String): JSONObject {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 8000
-        conn.readTimeout = 8000
+        conn.connectTimeout = 20000
+        conn.readTimeout = 25000
         try {
             return JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
         } finally {
@@ -282,8 +283,9 @@ class BearsDetailService : SuspendingComplicationDataSourceService() {
             throw e
         } catch (e: Exception) {
             Log.w("BearsScore", "detail load failed", e)
-            return EmptyComplicationData()
+            return longText(BearsGames.lastDetail().ifBlank { "\u200B" })
         }
-        return if (g.detail.isBlank()) EmptyComplicationData() else longText(g.detail)
+		Log.i("BearsScore", "detail='${g.detail}' | line1='${g.line1}' | line2='${g.line2}'")
+        return longText(g.detail.ifBlank { "\u200B" })
     }
 }
