@@ -40,7 +40,8 @@ object BearsGames {
 
     // Keep showing the final score until this long after kickoff, then switch to next game
     private const val FINAL_HOURS = 20L
-    private const val BALL = "\uD83C\uDFC8"
+    // private const val BALL = "\uD83C\uDFC8"  //Football icon in score
+    private const val BALL = "\u2022"  // Bullet icon in score
 
     // Refresh timing
     private const val LIVE_REFRESH_MS = 60_000L            // every minute during a live game
@@ -57,8 +58,10 @@ object BearsGames {
     suspend fun current(): GameView {
         val c = cache
         if (c != null && System.currentTimeMillis() - c.first < 15_000) return c.second
+        val t0 = System.currentTimeMillis()
         val v = withContext(Dispatchers.IO) { load() }
-        val now = System.currentTimeMillis()
+        Log.i("BearsScore", "load took ${System.currentTimeMillis() - t0} ms")
+		val now = System.currentTimeMillis()
         cache = now to v
         lastGood = now to v
         return v
@@ -140,7 +143,7 @@ object BearsGames {
                 }
             }
         } catch (e: Exception) {
-            Log.w("BearsScore", "scoreboard fetch failed", e)
+            Log.w("BearsScore", "scoreboard fetch failed: ${e.javaClass.simpleName}: ${e.message}")
         }
         val comp = comp(src)
         val (away, home) = sides(comp)

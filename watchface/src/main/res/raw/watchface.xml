@@ -40,20 +40,20 @@
 
     <!-- Slot 0: teams/score line + status line -->
     <ComplicationSlot slotId="0" name="SCORE" displayName="@string/score_slot"
-        x="60" y="272" width="330" height="95" supportedTypes="LONG_TEXT">
-      <BoundingBox x="0" y="0" width="330" height="95"/>
+        x="30" y="272" width="390" height="102" supportedTypes="LONG_TEXT">
+      <BoundingBox x="0" y="0" width="390" height="102"/>
       <DefaultProviderPolicy
           defaultSystemProvider="EMPTY"
           primaryProviderType="LONG_TEXT"/>
       <Complication type="LONG_TEXT">
-        <PartText x="0" y="0" width="330" height="50">
+        <PartText x="0" y="0" width="390" height="60">
           <Text align="CENTER">
-            <Font family="SANS_SERIF" size="36" weight="BOLD" color="#FFFFFF">
+            <Font family="SANS_SERIF" size="45" weight="BOLD" color="#FFFFFF">
               <Template>%s<Parameter expression="[COMPLICATION.TEXT]"/></Template>
             </Font>
           </Text>
         </PartText>
-        <PartText x="0" y="50" width="330" height="42">
+        <PartText x="0" y="62" width="390" height="40">
           <Text align="CENTER">
             <Font family="SANS_SERIF" size="30" weight="BOLD" color="#FFFFFF">
               <Template>%s<Parameter expression="[COMPLICATION.TITLE]"/></Template>
@@ -65,7 +65,7 @@
 
     <!-- Slot 1: stadium and broadcast (pregame only) -->
     <ComplicationSlot slotId="1" name="DETAIL" displayName="@string/detail_slot"
-        x="90" y="368" width="270" height="40" supportedTypes="LONG_TEXT">
+        x="90" y="372" width="270" height="40" supportedTypes="LONG_TEXT">
       <BoundingBox x="0" y="0" width="270" height="40"/>
 	  <DefaultProviderPolicy
          defaultSystemProvider="EMPTY"
@@ -73,7 +73,7 @@
       <Complication type="LONG_TEXT">
         <PartText x="0" y="0" width="270" height="40">
           <Text align="CENTER">
-            <Font family="SANS_SERIF" size="26" color="#FFFFFF">
+            <Font family="SANS_SERIF" size="24" color="#FFFFFF">
               <Template>%s<Parameter expression="[COMPLICATION.TEXT]"/></Template>
             </Font>
           </Text>
